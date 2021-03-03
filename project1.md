@@ -56,217 +56,9 @@ d2 = pd.read_csv("the_office_series.csv")
 
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Unnamed: 0</th>
-      <th>Season</th>
-      <th>EpisodeTitle</th>
-      <th>About</th>
-      <th>Ratings</th>
-      <th>Votes</th>
-      <th>Viewership</th>
-      <th>Duration</th>
-      <th>Date</th>
-      <th>GuestStars</th>
-      <th>Director</th>
-      <th>Writers</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>1</td>
-      <td>pilot</td>
-      <td>The premiere episode introduces the boss and s...</td>
-      <td>7.5</td>
-      <td>4936</td>
-      <td>11.20</td>
-      <td>23</td>
-      <td>24 March 2005</td>
-      <td>NaN</td>
-      <td>Ken Kwapis</td>
-      <td>Ricky Gervais |Stephen Merchant and Greg Daniels</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>1</td>
-      <td>diversity day</td>
-      <td>Michael's off color remark puts a sensitivity ...</td>
-      <td>8.3</td>
-      <td>4801</td>
-      <td>6.00</td>
-      <td>23</td>
-      <td>29 March 2005</td>
-      <td>NaN</td>
-      <td>Ken Kwapis</td>
-      <td>B. J. Novak</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2</td>
-      <td>1</td>
-      <td>health care</td>
-      <td>Michael leaves Dwight in charge of picking the...</td>
-      <td>7.8</td>
-      <td>4024</td>
-      <td>5.80</td>
-      <td>22</td>
-      <td>5 April 2005</td>
-      <td>NaN</td>
-      <td>Ken Whittingham</td>
-      <td>Paul Lieberstein</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>3</td>
-      <td>1</td>
-      <td>alliance</td>
-      <td>Just for a laugh, Jim agrees to an alliance wi...</td>
-      <td>8.1</td>
-      <td>3915</td>
-      <td>5.40</td>
-      <td>23</td>
-      <td>12 April 2005</td>
-      <td>NaN</td>
-      <td>Bryan Gordon</td>
-      <td>Michael Schur</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>4</td>
-      <td>1</td>
-      <td>basketball</td>
-      <td>Michael and his staff challenge the warehouse ...</td>
-      <td>8.4</td>
-      <td>4294</td>
-      <td>5.00</td>
-      <td>23</td>
-      <td>19 April 2005</td>
-      <td>NaN</td>
-      <td>Greg Daniels</td>
-      <td>Greg Daniels</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>183</th>
-      <td>183</td>
-      <td>9</td>
-      <td>stairmageddon</td>
-      <td>Dwight shoots Stanley with a bull tranquilizer...</td>
-      <td>8.0</td>
-      <td>1985</td>
-      <td>3.83</td>
-      <td>22</td>
-      <td>11 April 2013</td>
-      <td>NaN</td>
-      <td>Matt Sohn</td>
-      <td>Dan Sterling</td>
-    </tr>
-    <tr>
-      <th>184</th>
-      <td>184</td>
-      <td>9</td>
-      <td>paper airplane</td>
-      <td>The employees hold a paper airplane competitio...</td>
-      <td>8.0</td>
-      <td>2007</td>
-      <td>3.25</td>
-      <td>22</td>
-      <td>25 April 2013</td>
-      <td>NaN</td>
-      <td>Jesse Peretz</td>
-      <td>Halsted Sullivan | Warren Lieberstein</td>
-    </tr>
-    <tr>
-      <th>185</th>
-      <td>185</td>
-      <td>9</td>
-      <td>livin' dream</td>
-      <td>Dwight becomes regional manager after Andy qui...</td>
-      <td>9.0</td>
-      <td>2831</td>
-      <td>3.51</td>
-      <td>42</td>
-      <td>2 May 2013</td>
-      <td>Michael Imperioli</td>
-      <td>Jeffrey Blitz</td>
-      <td>Niki Schwartz-Wright</td>
-    </tr>
-    <tr>
-      <th>186</th>
-      <td>186</td>
-      <td>9</td>
-      <td>a.a.r.m.</td>
-      <td>Dwight prepares for a marriage proposal and hi...</td>
-      <td>9.5</td>
-      <td>3914</td>
-      <td>4.56</td>
-      <td>43</td>
-      <td>9 May 2013</td>
-      <td>NaN</td>
-      <td>David Rogers</td>
-      <td>Brent Forrester</td>
-    </tr>
-    <tr>
-      <th>187</th>
-      <td>187</td>
-      <td>9</td>
-      <td>finale</td>
-      <td>One year later, Dunder Mifflin employees past ...</td>
-      <td>9.8</td>
-      <td>10515</td>
-      <td>5.69</td>
-      <td>51</td>
-      <td>16 May 2013</td>
-      <td>Joan Cusack, Ed Begley Jr, Rachel Harris, Nanc...</td>
-      <td>Ken Kwapis</td>
-      <td>Greg Daniels</td>
-    </tr>
-  </tbody>
-</table>
-<p>186 rows × 12 columns</p>
-</div>
-
-
-
 ## 2. Exploratory Data Analysis and Feature Engineering
 
-Before any major analysis or feature engineering we had to make sure the data we had was fit to use by means of cleaning it. The main effort was required when dealing with the 'episode name' and 'about' columns, ensuring that we had consistency with the spelling of words, as well as merging columns which contained the same information.
+The `episode_name` and `EpisodeTitle` columns from the two data frames contained spelling errors and discrepancies that would have prevented subsequent merging of the data frames using these columns, including duplicate rows. Therefore these issues were first mitigated through data cleaning.
 
 
 ```python
@@ -277,30 +69,30 @@ d.episode_name = d.episode_name.apply(lambda x: x.lower())
 d2.EpisodeTitle = d2.EpisodeTitle.apply(lambda x: x.lower())
 
 # unify the spellings in the two data frames
-d.episode_name = d.episode_name.str.replace('surveilance', 'surveillance')
-d.episode_name = d.episode_name.str.replace('cover', 'cover-up')
-d.episode_name = d.episode_name.str.replace('a.a.r.m', 'a.a.r.m.')
-d.episode_name = d.episode_name.str.replace(' \(parts 1&2\)', '')
-d2.EpisodeTitle = d2.EpisodeTitle.str.replace(': part 1', ' (part 1)')
-d2.EpisodeTitle = d2.EpisodeTitle.str.replace(': part 2', ' (part 2)')
-d.episode_name = d.episode_name.str.replace('&', 'and')
-d.episode_name = d.episode_name.str.replace('s\*x', 'sex')
+d.episode_name = d.episode_name.str.replace('surveilance', 'surveillance', regex=False)
+d.episode_name = d.episode_name.str.replace('cover', 'cover-up', regex=False)
+d.episode_name = d.episode_name.str.replace('a.a.r.m', 'a.a.r.m.', regex=False)
+d.episode_name = d.episode_name.str.replace(' (parts 1&2)', '', regex=False)
+d2.EpisodeTitle = d2.EpisodeTitle.str.replace(': part 1', ' (part 1)', regex=False)
+d2.EpisodeTitle = d2.EpisodeTitle.str.replace(': part 2', ' (part 2)', regex=False)
+d.episode_name = d.episode_name.str.replace('&', 'and', regex=False)
+d.episode_name = d.episode_name.str.replace('s*x', 'sex', regex=False)
 
 # remove the word "the" from episode names
-d.episode_name = d.episode_name.str.replace('the ', '')
-d2.EpisodeTitle = d2.EpisodeTitle.str.replace('the ', '')
+d.episode_name = d.episode_name.str.replace('the ', '', regex=False)
+d2.EpisodeTitle = d2.EpisodeTitle.str.replace('the ', '', regex=False)
 
 # merge the `about` column of episodes that contains two parts
-d2.loc[d2.EpisodeTitle.str.contains('delivery \(part 2\)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('delivery')]['About'])
-d2.loc[d2.EpisodeTitle.str.contains('niagara \(part 2\)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('niagara')]['About'])
+d2.loc[d2.EpisodeTitle.str.contains('delivery (part 2)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('delivery')]['About'])
+d2.loc[d2.EpisodeTitle.str.contains('niagara (part 2)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('niagara')]['About'])
 
 # only keep rows for the second part
-d2 = d2.loc[~d2.EpisodeTitle.str.contains('delivery \(part 1\)')]
-d2 = d2.loc[~d2.EpisodeTitle.str.contains('niagara \(part 1\)')]
+d2 = d2.loc[~d2.EpisodeTitle.str.contains('delivery (part 1)', regex=False)]
+d2 = d2.loc[~d2.EpisodeTitle.str.contains('niagara (part 1)', regex=False)]
 
 # remove "(part 2)" from the episode names
-d2.loc[d2.EpisodeTitle.str.contains('delivery \(part 2\)'), "EpisodeTitle"] = 'delivery'
-d2.loc[d2.EpisodeTitle.str.contains('niagara \(part 2\)'), "EpisodeTitle"] = 'niagara'
+d2.loc[d2.EpisodeTitle.str.contains('delivery (part 2)', regex=False), "EpisodeTitle"] = 'delivery'
+d2.loc[d2.EpisodeTitle.str.contains('niagara (part 2)', regex=False), "EpisodeTitle"] = 'niagara'
 
 # check whether there are still differences in episode names
 set(d.episode_name.tolist()).symmetric_difference(set(d2.EpisodeTitle.tolist()))
@@ -313,7 +105,7 @@ set(d.episode_name.tolist()).symmetric_difference(set(d2.EpisodeTitle.tolist()))
 
 
 
-Now we have the clean data we merge the two data frames, using the most up to date values for imdb rating and votes.
+Now that we have clean data, we merge the two data frames using the most up-to-date values for `imdb_rating` and `total_votes`.
 
 
 ```python
@@ -321,7 +113,7 @@ Now we have the clean data we merge the two data frames, using the most up to da
 d2 = d2[["Ratings", "EpisodeTitle", "About", "Viewership", "Duration", "GuestStars", "Director"]]
 
 # replace `imdb_rating` in the original dataframe with `Ratings` from the additional data frame, since the latter has a higher sample size
-d.imdb_rating = d2.Ratings
+d.imdb_rating = d['episode_name'].map(d2.set_index('EpisodeTitle')['Ratings'])
 
 # combine the two data frames using episode names
 d = pd.merge(d, d2, left_on='episode_name', right_on='EpisodeTitle')
@@ -332,9 +124,9 @@ d = d.drop('EpisodeTitle', axis = 1)
 
 ### Feature Engineering: `n_lines`, `n_directions`, `n_words`, and `n_speak_char`
 
-On inspection of the aforementioned variables we can see that they are correlated with eachother. This is an issue due to the fact that if we include all of them in our model we will likely obtain an unstable model which will not perfrom well on our test data. This correlation is seen in the pairplot below. The most highly correlated variables are those with the smallest confidence interval, in this case the 'n_lines' and 'n_words' variables. In order to account for this we introduce a new varibale, 'words_per_line', which encapsulates both of these features whilst reducing the variation of our model.
+On inspection of the aforementioned variables we can see that they are correlated with one another. This is an issue since if we include all of them we may obtain an unstable model which perform suboptimally on test data. These correlations are shown in the pairplot below. The most highly correlated variables are those with the smallest confidence interval, in this case the 'n_lines' and 'n_words' variables. In order to account for this we introduce a new variable, `words_per_line`, which encapsulates both of these features whilst reducing the variation of our model.
 
-The confidence intervals between all the other variables were very large in comparison and we subsequentely decided that they were not correlated enough to be removed or altered.
+The confidence intervals between all the other variables were very large in comparison. Therefore we subsequently decided that they were not correlated enough to be removed or altered.
 
 
 ```python
@@ -345,7 +137,9 @@ sns.pairplot(data=d,
 ```
 
 
+    
 ![png](project1_files/project1_14_0.png)
+    
 
 
 
@@ -356,10 +150,7 @@ d['words_per_line'] = d.n_words/d.n_lines
 
 ### Feature Engineering: `air_date`, `month`
 
-
-```python
-words on air date
-```
+To explore whether `imdb_ratings` were associated with the months in which episodes were released, the `air_date` was converted to a "date" format. Afterwards, the months could be extracted from the dates, so that the distributions of `imdb_ratings` for each month could be visualised.
 
 
 ```python
@@ -392,12 +183,14 @@ plt.ylabel('month');
 ```
 
 
+    
 ![png](project1_files/project1_18_0.png)
+    
 
 
 ### Feature Engineering: `GuestStars` and `main_chars`
 
-The first issue we encountered with these columns was the fact that they were both object types containing strings, which we cannot directly use in our model. The first step was to change `GuestStar` into a column which simply indicated the presence of a guest star or not. We chose this way as oppose to keeping the original names of the guest stars in order to ...
+The first issue we encountered with these columns was the fact that they were both object types containing strings, which we cannot directly use in our model. Therefore we changed `GuestStar` into a column of integer type which simply indicates the presence or absence of a guest star. We chose this as opposed to keeping the original names of the guest stars, since most guest stars only starred in one or two episodes, hence differentiating between them would not be of benefit.
 
 
 ```python
@@ -408,12 +201,13 @@ d.loc[pd.isnull(d.GuestStars),"GuestStars"] = 0
 d.GuestStars = d.GuestStars.astype('int64');
 ```
 
-We repated this process for the `main_char` variable so that each main character now has their own column indicating whether they were present in an episode or not.
+We repeated this process for the `main_char` variable so that each main character now has their own column indicating their presence in each episode.
 
 
 ```python
 # split `main_chars` column into multiple columns
 main_chars_split = d.main_chars.str.split(expand=True, pat=';')
+
 # find out the total number of episode each main character starred in
 main_chars = pd.unique(main_chars_split.values.ravel('K'))
 main_chars = main_chars[main_chars != None] # remove Nan's
@@ -432,7 +226,7 @@ for char in main_chars:
 
 Upon analysis of the number of times each main character appeared in each episode we found that the impact of each appearance on the imdb rating was negligible. This is due to the fact that many of the characters may appeared in an episode but only briefly in comparison to others. In order to differentiate between the impact characters had on the imdb rating futher we considered the `About` column. This contained infomation about the plot and which characters were a key part of a given episode. Our idea was that if we found episodes about particular characters scored noticably higher or lower than the rest we could be certian that they were integral variables for our model.
 
-The violion plot below shows the imdb rating by character and we can clearly see that episodes where in which 'Michael' is a key character in the plot score bertter than the rest, whilst ones where 'Erin' mentioned perform worse.
+The violin plot below shows the imdb rating by character. We can clearly see in the plot that episodes where in which 'Michael' is a key character score bertter than the rest, whilst ones where 'Erin' was mentioned more perform worse.
 
 
 ```python
@@ -474,13 +268,12 @@ plt.ylabel('');
 ```
 
 
+    
 ![png](project1_files/project1_25_0.png)
+    
 
 
-
-```python
-further talk on characters and why we included only above
-```
+We then explored whether there were any statistically significant correlations between the number of mentions of each character in the `About` column with the `imdb_rating`, using the pairplot below. Columns that did not show statistically significant correlations were removed - correlations were deemed statistically significant when no horizontal line could be fit within the 95% convidence interval as indicated by the light blue shading around the regression line. Note that the pairplot below only shows columns with statistically significant correlations due to space constraint. 
 
 
 ```python
@@ -492,32 +285,19 @@ for i in np.arange(0,len(d.About),1):
     for char in main_chars:
         if char in d.About[i]:
             d.at[i,str('no_of_mentions_' + char)] = d.About[i].count(char)  
-#regression plots for noticable characters            
-for char in ['no_of_mentions_Darryl',
-            'no_of_mentions_Kevin',
+
+sns.pairplot(data=d,
+            y_vars=['imdb_rating'],
+            x_vars=['no_of_mentions_Kevin',
             'no_of_mentions_Erin',
-            'no_of_mentions_Michael']:
-    sns.regplot(x=char, y='imdb_rating', data=d);
-    plt.title(char.split("_")[-1]);
-    plt.xlabel('number of mentions');
-    plt.ylabel('imdb ratings');
-    plt.show();
+            'no_of_mentions_Michael'],
+            kind='reg');
 ```
 
 
+    
 ![png](project1_files/project1_27_0.png)
-
-
-
-![png](project1_files/project1_27_1.png)
-
-
-
-![png](project1_files/project1_27_2.png)
-
-
-
-![png](project1_files/project1_27_3.png)
+    
 
 
 ### Feature Engineering: `director` and `writer`
@@ -597,14 +377,63 @@ d.loc[(writer_split_avg >= 18)&(writer_split_avg <= 21), 'writer_grouped'] = 'E'
 
 
 ```python
-#d = pd.get_dummies(d, columns = ['director_grouped', 'writer_grouped'])
+d = pd.get_dummies(d, columns = ['director_grouped', 'writer_grouped', 'month'])
+```
 
+
+    ---------------------------------------------------------------------------
+
+    KeyError                                  Traceback (most recent call last)
+
+    <ipython-input-53-fc7ccb163134> in <module>
+    ----> 1 d = pd.get_dummies(d, columns = ['director_grouped', 'writer_grouped', 'month'])
+    
+
+    ~\Anaconda3\lib\site-packages\pandas\core\reshape\reshape.py in get_dummies(data, prefix, prefix_sep, dummy_na, columns, sparse, drop_first, dtype)
+        845             raise TypeError("Input must be a list-like for parameter `columns`")
+        846         else:
+    --> 847             data_to_encode = data[columns]
+        848 
+        849         # validate prefixes and separator to avoid silently dropping cols
+    
+
+    ~\Anaconda3\lib\site-packages\pandas\core\frame.py in __getitem__(self, key)
+       3028             if is_iterator(key):
+       3029                 key = list(key)
+    -> 3030             indexer = self.loc._get_listlike_indexer(key, axis=1, raise_missing=True)[1]
+       3031 
+       3032         # take() does not accept boolean indexers
+    
+
+    ~\Anaconda3\lib\site-packages\pandas\core\indexing.py in _get_listlike_indexer(self, key, axis, raise_missing)
+       1263             keyarr, indexer, new_indexer = ax._reindex_non_unique(keyarr)
+       1264 
+    -> 1265         self._validate_read_indexer(keyarr, indexer, axis, raise_missing=raise_missing)
+       1266         return keyarr, indexer
+       1267 
+    
+
+    ~\Anaconda3\lib\site-packages\pandas\core\indexing.py in _validate_read_indexer(self, key, indexer, axis, raise_missing)
+       1305             if missing == len(indexer):
+       1306                 axis_name = self.obj._get_axis_name(axis)
+    -> 1307                 raise KeyError(f"None of [{key}] are in the [{axis_name}]")
+       1308 
+       1309             ax = self.obj._get_axis(axis)
+    
+
+    KeyError: "None of [Index(['director_grouped', 'writer_grouped', 'month'], dtype='object')] are in the [columns]"
+
+
+
+```python
 # only keep columns that are of interest
 d = d[['imdb_rating', 'total_votes', 'Viewership', 'Duration', 'GuestStars', 'words_per_line',
-       'n_lines', 'n_directions', 'n_words', 'n_speak_char', 'month',
+       'n_lines', 'n_directions', 'n_words', 'n_speak_char', 
    'no_of_mentions_Kevin', 'no_of_mentions_Erin', 'no_of_mentions_Michael',
    'director_grouped_A', 'director_grouped_B', 'director_grouped_C', 'director_grouped_D',
-   'writer_grouped_A', 'writer_grouped_B', 'writer_grouped_C', 'writer_grouped_D', 'writer_grouped_E']]
+   'writer_grouped_A', 'writer_grouped_B', 'writer_grouped_C', 'writer_grouped_D', 'writer_grouped_E', 
+       'month_1', 'month_2', 'month_3', 'month_4', 'month_5', 
+       'month_9', 'month_10', 'month_11', 'month_12']]
 ```
 
 *Include a detailed discussion of the data with a particular emphasis on the features of the data that are relevant for the subsequent modeling. Including visualizations of the data is strongly encouraged - all code and plots must also be described in the write up. Think carefully about whether each plot needs to be included in your final draft - your report should include figures but they should be as focused and impactful as possible.*
@@ -620,6 +449,10 @@ d = d[['imdb_rating', 'total_votes', 'Viewership', 'Duration', 'GuestStars', 'wo
 *For example if you considered a linear regression model, a classification tree, and a lasso model and ultimately settled on the linear regression approach then you should mention that other two approaches were tried but do not include any of the code or any in depth discussion of these models beyond why they were rejected. This section should then detail is the development of the linear regression model in terms of features used, interactions considered, and any additional tuning and validation which ultimately led to your final model.* 
 
 *This section should also include the full implementation of your final model, including all necessary validation. As with figures, any included code must also be addressed in the text of the document.*
+
+
+
+We were first able to explore a baseline linear regression model with all of the initial variables being kept. Performing GridSearchCV, we were able to get a cross validation rmse of ~0.55468. We then explored a Lasso model to optimize the $\alpha$ parameter and ended up with a cross validation rmse of ~0.5192. As expected this value was better than the Linear Regression model as it performed variable selection by shrinking many of the coefficients to 0. We also fit the data to a Ridge Regression model that resulted in a cross validation rmse of ~0.5186. Therefore, among the linear models the Ridge Regression model performed the best, however the final rmse of the model was clearly not very good. Also, taking into account the fits of the linear models and the fact the predictions were concentrated between 7.5 and 8.5 demonstrated that the models were not very accurate predictors for the tail ends of the data. As a result, we decided to proceed with a Decision Tree Regression model.
 
 ## 4. Discussion & Conclusions
 
