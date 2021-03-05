@@ -33,6 +33,15 @@ plt.rcParams['figure.dpi'] = 80
 
 # sklearn modules
 import sklearn
+from sklearn import tree
+from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.datasets import make_regression
 
 import datetime
 ```
@@ -47,14 +56,15 @@ d2 = pd.read_csv("the_office_series.csv")
 
 ## 1. Introduction
 
-*This section should include a brief introduction to the task and the data (assume this is a report you are delivering to a client). If you use any additional data sources, you should introduce them here and discuss why they were included.*
+This work aims to use information about all past episodes of The Office to determine what distinguishes high-rated episodes from less popular ones. Ultimately, we wish to use this understanding to give advice to NBC Universal Studios on how to create a successful special reunion episode.
 
-*Briefly outline the approaches being used and the conclusions that you are able to draw.*
+First, data was reviewed and cleaned. In particular, we incorporated additional data containing updated and therefore more reliable imdb ratings. Further, this data contained additional information on each episode such as its duration and the presence of guest stars. Importantly, this additional data contains a verbal summary of each episode. By extracting the number of mentions of each character in these descriptions we obtained a proxy for their importance to that episode. We believe this indicator is more granular and superior to the mere character-presence indicator contained in the original data.
 
+Using this combined and cleaned data set we were able to develop several predictive models. These were all trained on a training subset of the 186 episodes. Tuning and evaluation of each model was done using cross-validation to obtain more generalizable error estimates. Ultimately, a shallow decision tree model proved to be most successful as at 0.245 rating points, it had the lowest average, cross-validated prediction error. Using bootstrapping we obtained a tight 95% confidence interval of 0.01 indicating that this result is reliable. We see the simplicity of the model as an asset as it demonstrated high validity does not constrain the producers' creative freedom.
 
-```python
+Specifically, we suggest placing Michael at the centre of the reunion episode. Further, episodes that contained more words are generally higher rated. Our analyses therefore suggest to additionally write a show with more than 3447 words, which corresponds to about 13% more than the mean. With these two simple considerations we expect the episode to achieve a rating of 8.9 points. This corresponds to a rating in the 88th percentile.
 
-```
+We believe that this advice is grounded in a robust analysis, feasible to implement and will compliment the producers' domain knowledge and judgements well as it leaves significant room for creative expression.
 
 ## 2. Exploratory Data Analysis and Feature Engineering
 
@@ -83,8 +93,8 @@ d.episode_name = d.episode_name.str.replace('the ', '', regex=False)
 d2.EpisodeTitle = d2.EpisodeTitle.str.replace('the ', '', regex=False)
 
 # merge the `about` column of episodes that contains two parts
-d2.loc[d2.EpisodeTitle.str.contains('delivery (part 2)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('delivery')]['About'])
-d2.loc[d2.EpisodeTitle.str.contains('niagara (part 2)'),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('niagara')]['About'])
+d2.loc[d2.EpisodeTitle.str.contains('delivery (part 2)', regex=False),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('delivery')]['About'])
+d2.loc[d2.EpisodeTitle.str.contains('niagara (part 2)', regex=False),'About'] = ' '.join(d2[d2.EpisodeTitle.str.contains('niagara')]['About'])
 
 # only keep rows for the second part
 d2 = d2.loc[~d2.EpisodeTitle.str.contains('delivery (part 1)', regex=False)]
@@ -122,25 +132,9 @@ d = pd.merge(d, d2, left_on='episode_name', right_on='EpisodeTitle')
 d = d.drop('EpisodeTitle', axis = 1)
 ```
 
-### Feature Engineering: `n_lines`, `n_directions`, `n_words`, and `n_speak_char`
+### Feature Engineering: `n_lines`, `n_directions`, `n_words`, `n_speak_char`, and `duration`
 
-On inspection of the aforementioned variables we can see that they are correlated with one another. This is an issue since if we include all of them we may obtain an unstable model which perform suboptimally on test data. These correlations are shown in the pairplot below. The most highly correlated variables are those with the smallest confidence interval, in this case the 'n_lines' and 'n_words' variables. In order to account for this we introduce a new variable, `words_per_line`, which encapsulates both of these features whilst reducing the variation of our model.
-
-The confidence intervals between all the other variables were very large in comparison. Therefore we subsequently decided that they were not correlated enough to be removed or altered.
-
-
-```python
-sns.pairplot(data=d,
-            y_vars=["n_lines", "n_directions", "n_words", "n_speak_char"],
-            x_vars=["n_lines", "n_directions", "n_words", "n_speak_char"],
-            kind="reg");
-```
-
-
-    
-![png](project1_files/project1_14_0.png)
-    
-
+On inspection of the aforementioned variables we saw that they are correlated with one another. This is an issue since if we include all of them we may obtain an unstable linear regression model which would perform suboptimally on test data. In order to control for some of this correlation we introduced new variables, `words_per_line`, `lines_per_minute`, `directions_per_minute`, `words_per_minute` and `speaking_characters_per_minute`. However, in our final model this turned out not to be an issue as the model we used allows for correlated variables without affecting the prediction so we returned to the original definition of these variables instead.
 
 
 ```python
@@ -184,13 +178,13 @@ plt.ylabel('month');
 
 
     
-![png](project1_files/project1_18_0.png)
+![png](project1_files/project1_17_0.png)
     
 
 
 ### Feature Engineering: `GuestStars` and `main_chars`
 
-The first issue we encountered with these columns was the fact that they were both object types containing strings, which we cannot directly use in our model. Therefore we changed `GuestStar` into a column of integer type which simply indicates the presence or absence of a guest star. We chose this as opposed to keeping the original names of the guest stars, since most guest stars only starred in one or two episodes, hence differentiating between them would not be of benefit.
+The first issue we encountered with these columns was the fact that they were both object types containing strings, which we cannot directly use in our model. Therefore we changed `GuestStar` into a binary variable which simply indicates the presence or absence of a guest star. We chose this as opposed to keeping the original names of the guest stars, since most guest stars only starred in one or two episodes, hence differentiating between them would not be of benefit.
 
 
 ```python
@@ -224,7 +218,7 @@ for char in main_chars:
             d.at[i,char] = 0
 ```
 
-Upon analysis of the number of times each main character appeared in each episode we found that the impact of each appearance on the imdb rating was negligible. This is due to the fact that many of the characters may appeared in an episode but only briefly in comparison to others. In order to differentiate between the impact characters had on the imdb rating futher we considered the `About` column. This contained infomation about the plot and which characters were a key part of a given episode. Our idea was that if we found episodes about particular characters scored noticably higher or lower than the rest we could be certian that they were integral variables for our model.
+Upon analysis of the number of times each main character appeared in each episode we found that the impact of each appearance on the imdb rating was negligible. This is due to the fact that many of the characters may appeared in an episode but only briefly in comparison to others. In order to differentiate between the impact characters had on the imdb rating futher we considered the `About` column. This contained infomation about the plot and which characters were a key part of a given episode. Our idea was that if we found episodes about particular characters scored noticeably higher or lower than the rest we could be certain that they were integral variables for our model.
 
 The violin plot below shows the imdb rating by character. We can clearly see in the plot that episodes where in which 'Michael' is a key character score bertter than the rest, whilst ones where 'Erin' was mentioned more perform worse.
 
@@ -269,7 +263,7 @@ plt.ylabel('');
 
 
     
-![png](project1_files/project1_25_0.png)
+![png](project1_files/project1_24_0.png)
     
 
 
@@ -296,7 +290,7 @@ sns.pairplot(data=d,
 
 
     
-![png](project1_files/project1_27_0.png)
+![png](project1_files/project1_26_0.png)
     
 
 
@@ -381,50 +375,6 @@ d = pd.get_dummies(d, columns = ['director_grouped', 'writer_grouped', 'month'])
 ```
 
 
-    ---------------------------------------------------------------------------
-
-    KeyError                                  Traceback (most recent call last)
-
-    <ipython-input-53-fc7ccb163134> in <module>
-    ----> 1 d = pd.get_dummies(d, columns = ['director_grouped', 'writer_grouped', 'month'])
-    
-
-    ~\Anaconda3\lib\site-packages\pandas\core\reshape\reshape.py in get_dummies(data, prefix, prefix_sep, dummy_na, columns, sparse, drop_first, dtype)
-        845             raise TypeError("Input must be a list-like for parameter `columns`")
-        846         else:
-    --> 847             data_to_encode = data[columns]
-        848 
-        849         # validate prefixes and separator to avoid silently dropping cols
-    
-
-    ~\Anaconda3\lib\site-packages\pandas\core\frame.py in __getitem__(self, key)
-       3028             if is_iterator(key):
-       3029                 key = list(key)
-    -> 3030             indexer = self.loc._get_listlike_indexer(key, axis=1, raise_missing=True)[1]
-       3031 
-       3032         # take() does not accept boolean indexers
-    
-
-    ~\Anaconda3\lib\site-packages\pandas\core\indexing.py in _get_listlike_indexer(self, key, axis, raise_missing)
-       1263             keyarr, indexer, new_indexer = ax._reindex_non_unique(keyarr)
-       1264 
-    -> 1265         self._validate_read_indexer(keyarr, indexer, axis, raise_missing=raise_missing)
-       1266         return keyarr, indexer
-       1267 
-    
-
-    ~\Anaconda3\lib\site-packages\pandas\core\indexing.py in _validate_read_indexer(self, key, indexer, axis, raise_missing)
-       1305             if missing == len(indexer):
-       1306                 axis_name = self.obj._get_axis_name(axis)
-    -> 1307                 raise KeyError(f"None of [{key}] are in the [{axis_name}]")
-       1308 
-       1309             ax = self.obj._get_axis(axis)
-    
-
-    KeyError: "None of [Index(['director_grouped', 'writer_grouped', 'month'], dtype='object')] are in the [columns]"
-
-
-
 ```python
 # only keep columns that are of interest
 d = d[['imdb_rating', 'total_votes', 'Viewership', 'Duration', 'GuestStars', 'words_per_line',
@@ -436,34 +386,612 @@ d = d[['imdb_rating', 'total_votes', 'Viewership', 'Duration', 'GuestStars', 'wo
        'month_9', 'month_10', 'month_11', 'month_12']]
 ```
 
-*Include a detailed discussion of the data with a particular emphasis on the features of the data that are relevant for the subsequent modeling. Including visualizations of the data is strongly encouraged - all code and plots must also be described in the write up. Think carefully about whether each plot needs to be included in your final draft - your report should include figures but they should be as focused and impactful as possible.*
-
-*Additionally, this section should also implement and describe any preprocessing / feature engineering of the data. Specifically, this should be any code that you use to generate new columns in the data frame `d`. All of this processing is explicitly meant to occur before we split the data in to training and testing subsets. Processing that will be performed as part of an sklearn pipeline can be mentioned here but should be implemented in the following section.*
-
-*All code and figures should be accompanied by text that provides an overview / context to what is being done or presented.*
-
 ## 3. Model Fitting and Tuning
 
-*In this section you should detail your choice of model and describe the process used to refine and fit that model. You are strongly encouraged to explore many different modeling methods (e.g. linear regression, regression trees, lasso, etc.) but you should not include a detailed narrative of all of these attempts. At most this section should mention the methods explored and why they were rejected - most of your effort should go into describing the model you are using and your process for tuning and validatin it.*
+As an initial step we developed a baseline model that guesses the mean imdb rating on any episode regardless of its characteristics. Clearly this provide no insight into what distinguishes popular episodes from less popular ones. However, it does give us an idea of how good our models should be. Specifically, the naive mean model produces an RMSE of 0.63. We would therefore expect any more complex model to be superior to that.
 
-*For example if you considered a linear regression model, a classification tree, and a lasso model and ultimately settled on the linear regression approach then you should mention that other two approaches were tried but do not include any of the code or any in depth discussion of these models beyond why they were rejected. This section should then detail is the development of the linear regression model in terms of features used, interactions considered, and any additional tuning and validation which ultimately led to your final model.* 
+Indeed, we first explored a linear regression model with all of the initial variables being kept. This produced a cross-validation RMSE of 0.555 which is slightly better than the naive baseline. However, we might improve on this by either adding flexiblity through additional polynomial degrees or reducing flexibility by removing unrelated variables. First, we performed a search over higher degree polynomial models finding that in fact the linear model was best suited. Next, we explored regularisation: With LASSO we aimed to reduce the feature space and indeed after optimising for the tuning parameter $\alpha$ we obtained an improved cross-validation RMSE of 0.519. This is a slight improvement on the full linear model and with only **XXXX** predictors remaining would be easier to interpret and draw conclusions from. We tried ridge regression with similar success (CV RMSE of 0.519). Regularisation helped, however, the model was still quite poor. This was particularly obvious when plotting the fit and the residuals. The predictions were rather flat, overestimating unpopular shows and underestimating popular ones. As a result, we decided to proceed with a Decision Tree Regression model.
 
-*This section should also include the full implementation of your final model, including all necessary validation. As with figures, any included code must also be addressed in the text of the document.*
+We also inverstigated the idea of using a random forest as our predictive model. Whilst this model yielded accurate results (CV RMSE of **XXX**), we opted not to choose it. This was mainly due to the fact that the results are not very interpertable. While we could make inferences about how important a given feature was to our model, we could not say in which way, either positively or negatively. This made it reduntant in making recommendations. However, our findings in this model and our final regression tree model were similar in that they both deemed the most important feature to improve an episode's rating to be how much the episode's plot centered around Michael. This can clearly be seen in the graph feature importance graph below. The second most important feature is `n_words`, which yet again agrees with what we find in our Regression Tree model, thus validating its correctness and robustness.
+
+
+```python
+X = d.drop(['imdb_rating',"total_votes","Viewership"], axis=1)
+y = d.imdb_rating
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Creating an StandardScaler object
+std_slc = StandardScaler()
+
+# Creating a DecisionTreeRegressor object
+ran_forest = RandomForestRegressor(n_estimators=100)
+
+# The pipeline standardises the data, then trains the decision tree regressor model.
+pipe = Pipeline(steps=[('std_slc', std_slc),
+                       ('ran_forest', ran_forest)])
+
+# Creating lists of parameters to experiment with GridSearchCV, then inserting these into a dictionary
+max_depth = list(range(10,21,1))
+
+parameters = dict(ran_forest__max_depth=max_depth)
+
+# KFold cross-validation specifications
+kf = KFold(n_splits=5, shuffle=True, random_state=0)
+
+# Creating a GridSearchCV object, using negative mean squared error as the metric
+grid_search = GridSearchCV(pipe, parameters, scoring='neg_mean_squared_error', cv=kf)
+
+# Run the grid_search object
+grid_search.fit(X_train, y_train)
+
+# Print the best parameters
+print('Best criterion:', grid_search.best_estimator_.get_params()['ran_forest__criterion'])
+print("best score: ", grid_search.best_score_)
+
+# plot feature importance
+importance = grid_search.best_estimator_.named_steps['ran_forest'].feature_importances_
+
+plt.barh(X.columns, importance)
+plt.title('Feature importance scores for a Random Forest of 100 regression trees')
+plt.show()
+```
+
+    Best criterion: mse
+    best score:  -0.2368916271264368
+    
+
+
+    
+![png](project1_files/project1_37_1.png)
+    
+
+
+### Decision Tree Regressor
+
+While exploratory analysis revealed that `total_votes` and `viewership` are significantly related to `imdb_rating`, we decided not to us these as predictor variables, since they are not under the producers' control and hence we cannot make recommendations regarding these variables. These columns were therefore dropped from our dataset. The samples were then split into train and test sets. For the cross-validation, we only utilised the training set to prevent overfitting.
+
+
+```python
+# drop columns that are not required, split samples into train and test sets
+X = d.drop(['imdb_rating',"total_votes","Viewership"], axis=1)
+y = d.imdb_rating
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+```
+
+Before training the decision tree model, the data were standardised to ensure that variables are of similar orders of magnitudes, so as to maximise the performance of the model. 
+
+Through cross-validation, we explored the effects of varying `max_depth` and `ccp_alpha`, which respectively control the maximum depth of the tree and the cost-complexity pruning of the tree to control the size of the tree and prevent overfitting. We started with a large, deep tree and pruned it according to cost-complexity.
+
+A standard five-fold cross validation approach was employed. The resulting optimised hyperparamters were then outputted from the model, as shown in the output of the cell below.
+
+
+```python
+# Creating an StandardScaler object
+std_scaler = StandardScaler()
+
+# Creating a DecisionTreeRegressor object
+dec_tree = tree.DecisionTreeRegressor()
+
+# The pipeline standardises the data, then trains the decision tree regressor model.
+pipe = Pipeline(steps=[('std_scaler', std_scaler),
+                       ('dec_tree', dec_tree)])
+
+# Creating lists of parameters to experiment with GridSearchCV, then inserting these into a dictionary
+criterion = ['mse']
+max_depth = list(range(10,31,1))
+ccp_alpha = list(np.arange(0,0.05,0.005))
+
+parameters = dict(dec_tree__criterion=criterion,
+                  dec_tree__max_depth=max_depth, 
+                  dec_tree__ccp_alpha=ccp_alpha)
+
+# KFold cross-validation specifications
+kf = KFold(n_splits=5, shuffle=True, random_state=0)
+
+# Creating a GridSearchCV object, using negative mean squared error as the metric
+grid_search = GridSearchCV(pipe, parameters, scoring='neg_mean_squared_error', cv=kf)
+
+# Run the grid_search object
+grid_search.fit(X_train, y_train)
+
+# Print the best parameters
+print("best index: ", grid_search.best_index_)
+print("best param: ", grid_search.best_params_)
+print("best score: ", grid_search.best_score_)
+```
+
+    best index:  63
+    best param:  {'dec_tree__ccp_alpha': 0.015, 'dec_tree__criterion': 'mse', 'dec_tree__max_depth': 10}
+    best score:  -0.24534650025370386
+    
+
+A significant advantage of decision tree models over other models lies in its simple interpretation. In the diagram below, the resulting decision tree is visualised so that its decision-making process could be investigated.
+
+
+```python
+fig = plt.figure(figsize=(15,10))
+_ = tree.plot_tree(grid_search.best_estimator_.named_steps['dec_tree'], 
+                   feature_names=X.columns,
+                   filled=True, 
+                   max_depth=5,
+                   fontsize=10)
+```
+
+
+    
+![png](project1_files/project1_44_0.png)
+    
+
+
+To inspect the accuracy of the model's predictions, we plotted predicted values against actual imdb ratings. Promisingly, the predicted values do generally increase for higher actual values. However, since the optimised decision tree is only two layers deep, the predicted values inevitably appear discrete due to the few number of splits in the tree. Nevertheless, this was found to be the optimal model by GridSearchCV after pruning. 
+
+
+```python
+# plot actual vs. predicted imdb ratings
+sns.scatterplot(x=y_train, y=grid_search.best_estimator_.predict(X_train));
+plt.xlabel('actual imdb rating');
+plt.ylabel('predicted imdb rating');
+plt.xlim([6.5,10]);
+plt.ylim([6.5,10]);
+plt.title('Actual vs. predicted imdb ratings');
+
+# plot diagonal line
+x_diag = np.linspace(6.5,10,100)
+y_diag = x_diag
+plt.plot(x_diag, y_diag, color='lightgrey')
+plt.show();
+```
+
+
+    
+![png](project1_files/project1_46_0.png)
+    
+
+
+The residuals of the model are plotted against actual imdb values below to inspect whether our model is able to capture trends in the data. Promisingly, the residuals show no observable trends.
+
+
+```python
+y_pred = grid_search.predict(X_train)
+```
+
+
+```python
+from scipy import stats
+
+# Obtain regression slope and intercept
+slope, intercept, rv, pv, se = stats.linregress(y_train, y_pred)
+
+# Calculate residuals
+resid = y_pred - slope * y_train - intercept
+
+# Residual plot: fit regression line
+sns.regplot(x=y_train, y=resid, ci=False, fit_reg=True); 
+plt.ylabel('residuals');
+```
+
+
+    
+![png](project1_files/project1_49_0.png)
+    
+
+
+The root mean squared error for the test set was then computed to show the performance of the optimised model. The root mean squared error is worse than that from cross-validation, indicating that there was potential underfitting or overfitting despite having optimised the hyperparameters. 
+
+
+```python
+from sklearn.metrics import mean_squared_error
+```
+
+
+```python
+mean_squared_error(y_test, grid_search.predict(X_test), squared=False)
+```
 
 
 
-We were first able to explore a baseline linear regression model with all of the initial variables being kept. Performing GridSearchCV, we were able to get a cross validation rmse of ~0.55468. We then explored a Lasso model to optimize the $\alpha$ parameter and ended up with a cross validation rmse of ~0.5192. As expected this value was better than the Linear Regression model as it performed variable selection by shrinking many of the coefficients to 0. We also fit the data to a Ridge Regression model that resulted in a cross validation rmse of ~0.5186. Therefore, among the linear models the Ridge Regression model performed the best, however the final rmse of the model was clearly not very good. Also, taking into account the fits of the linear models and the fact the predictions were concentrated between 7.5 and 8.5 demonstrated that the models were not very accurate predictors for the tail ends of the data. As a result, we decided to proceed with a Decision Tree Regression model.
+
+    0.4172720294470546
+
+
+
+#### Bootstrap
+Bootstrapping let's us estimate not only the generalization error but also a confidence interval on that prediction error. Here we observe that the 95% confidence interval is very narrow at 0.01 compared to an RMSE of 0.245.
+
+
+```python
+from sklearn import utils
+import statistics
+import numpy as np, scipy.stats as st
+```
+
+
+```python
+# Initializes a dataframe to take the bootstrap samples from
+X_boot = X_train
+X_boot.loc[:,"imdb_rating"] = y_train
+X_boot
+```
+
+    C:\Users\Dell\Anaconda3\lib\site-packages\pandas\core\indexing.py:1596: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      self.obj[key] = value
+    C:\Users\Dell\Anaconda3\lib\site-packages\pandas\core\indexing.py:1675: SettingWithCopyWarning: 
+    A value is trying to be set on a copy of a slice from a DataFrame.
+    Try using .loc[row_indexer,col_indexer] = value instead
+    
+    See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+      self._setitem_single_column(ilocs[0], value, pi)
+    
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Duration</th>
+      <th>GuestStars</th>
+      <th>words_per_line</th>
+      <th>n_lines</th>
+      <th>n_directions</th>
+      <th>n_words</th>
+      <th>n_speak_char</th>
+      <th>no_of_mentions_Kevin</th>
+      <th>no_of_mentions_Erin</th>
+      <th>no_of_mentions_Michael</th>
+      <th>...</th>
+      <th>month_1</th>
+      <th>month_2</th>
+      <th>month_3</th>
+      <th>month_4</th>
+      <th>month_5</th>
+      <th>month_9</th>
+      <th>month_10</th>
+      <th>month_11</th>
+      <th>month_12</th>
+      <th>imdb_rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>139</th>
+      <td>23</td>
+      <td>0</td>
+      <td>11.544248</td>
+      <td>226</td>
+      <td>31</td>
+      <td>2609</td>
+      <td>16</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>22</td>
+      <td>1</td>
+      <td>9.266904</td>
+      <td>281</td>
+      <td>33</td>
+      <td>2604</td>
+      <td>14</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.4</td>
+    </tr>
+    <tr>
+      <th>113</th>
+      <td>30</td>
+      <td>0</td>
+      <td>10.134969</td>
+      <td>326</td>
+      <td>46</td>
+      <td>3304</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7.8</td>
+    </tr>
+    <tr>
+      <th>170</th>
+      <td>22</td>
+      <td>0</td>
+      <td>8.975155</td>
+      <td>322</td>
+      <td>42</td>
+      <td>2890</td>
+      <td>19</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7.8</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>30</td>
+      <td>0</td>
+      <td>11.910448</td>
+      <td>268</td>
+      <td>37</td>
+      <td>3192</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>103</th>
+      <td>30</td>
+      <td>0</td>
+      <td>8.381679</td>
+      <td>131</td>
+      <td>25</td>
+      <td>1098</td>
+      <td>12</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6.8</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>22</td>
+      <td>0</td>
+      <td>10.007407</td>
+      <td>270</td>
+      <td>48</td>
+      <td>2702</td>
+      <td>16</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>117</th>
+      <td>30</td>
+      <td>0</td>
+      <td>10.192140</td>
+      <td>229</td>
+      <td>33</td>
+      <td>2334</td>
+      <td>17</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.2</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>21</td>
+      <td>0</td>
+      <td>10.739300</td>
+      <td>257</td>
+      <td>45</td>
+      <td>2760</td>
+      <td>18</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>8.7</td>
+    </tr>
+    <tr>
+      <th>172</th>
+      <td>22</td>
+      <td>1</td>
+      <td>11.561265</td>
+      <td>253</td>
+      <td>52</td>
+      <td>2925</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7.6</td>
+    </tr>
+  </tbody>
+</table>
+<p>148 rows × 29 columns</p>
+</div>
+
+
+
+
+```python
+# Stores the bootstrap samples
+boots = []
+
+# Resamples the data with replacements
+i = 1
+while i <= 100:
+    boots.append(utils.resample(X_boot, replace=True, n_samples=len(X_train), random_state=i, stratify=None))
+    i += 1
+```
+
+
+```python
+# Stores the RMSE for each bootstrap sample
+boot_rmse = []
+
+# Obtains the RMSE for each bootstrap sample 
+# by predicting using our model 
+i = 0
+while i < len(boots):
+    boot_rmse.append(mean_squared_error(boots[i].imdb_rating, grid_search.predict(boots[i].drop("imdb_rating", axis = 1)), squared=False))
+    i += 1
+```
+
+
+```python
+# Obtains the 95% confident interval
+conf_int = st.t.interval(0.95, len(boot_rmse)-1, loc=np.mean(boot_rmse), scale=st.sem(boot_rmse))
+
+print("The 95% confidence interval is:", round(conf_int[1]-conf_int[0],3))
+```
 
 ## 4. Discussion & Conclusions
 
 
-*In this section you should provide a general overview of your final model, its performance, and reliability. You should discuss what the implications of your model are in terms of the included features, predictive performance, and anything else you think is relevant.*
+Ultimately, we selected a regression tree model because it provides the best balance between high prediction accuracy and interpretability. Specifically, our final regression tree model is quite shallow at only two layers deep. This was obtained by initially developing a large tree before pruning it using the cost complexity criterion. Using this search over a large grid of possible parameter combinations, we obtain an optimal tree with an average 5-fold cross-validation RMSE of 0.245. This means that given information about a novel episode our model's prediction is on average within 0.245 rating points of the actual value. This is superior to all but the RandomForest model we tried which, however, suffers from poor interpretability. Bootstrapping the model by drawing randomly with replacement from the original tranining data, we see that the standard deviation of the RMSE over 100 bootstrapped samples is merely 0.01, indicating that value is reliable.  
 
-*This should be written with a target audience of a NBC Universal executive who is with the show and  university level mathematics but not necessarily someone who has taken a postgraduate statistical modeling course. Your goal should be to convince this audience that your model is both accurate and useful.*
+Putting this prediction error into context, we observe that it adds value beyond the naive approach of predicting the mean rating on every episode (which produces an RMSE of 0.63). This shows that our model makes good use of the available data. When questioning why our model does not perform even better we should note several things: First, the episode ratings are fairly consistent, with a standard deviation of merely 0.59 around the mean which makes the mean actually a reasonable, yet useless estimator. Second, it is noteable that our model obtains this improvement while focussing on merely three pieces of data: the number of times Michael is mentioned in the episode's description, the number of words and the number of lines spoken in that episode. Third, we should consider the complexity of human thought and behaviour. Breaking down the popularity of an episode and people's inclination to rate it on a website is simply not a trivial task. We are therefore not surprised that this limited data set does not result in even better predictions. Since the content of an episode, i.e. the main character(s) are deemed most impactful by the model, a useful extension may be to consider sentiment or theme analysis to gain further insight into which content drives good ratings. 
 
-*Finally, you should include concrete recommendations on what NBC Universal should do to make their reunion episode a popular as possible.*
+A slightly puzzling result is given by RMSE on the test data which at 0.417 is significantly worse than the cross-validation RMSE. We would expect that the cross-validation RMSE is a representative estimate of the generalization error and we have no ready explanation for this large discrepancy. We checked whether the random train-test split perhaps resulted in unfortunate partitions, howewer this does not explain the discrepancy. We decided to be transparent about the result but not attach too much weight to it. We believe our methods are valid and adjusting our model based on unsatisfactory test results would violate the golden rule of machine learning to never train on your test data. 
 
-*Keep in mind that a negative result, i.e. a model that does not work well predictively, that is well explained and justified in terms of why it failed will likely receive higher marks than a model with strong predictive performance but with poor or incorrect explinations / justifications.*
+Our regression tree allows us to make several recommendations. Specifically, the number of times Michael is mentioned in the episode description is important. We understand this a as proxy for the focus of the episode, and generally, focussing more on Michael is adviseable. Notably, however, there are a handful cases where Michael was incidental to the episode but the rating was still favourable as long as the episode had particularly many lines. Since this sample is quite small it is unclear how reliable this finding is. Therefore, we recommend designing an episode for the second best region on the right-hand branch of the tree. Specifically, Michael should be central to an episode and that episode should contain a high number of words. To be precise our model predicts a mean rating of 8.9, when 3447 words (corresponding to 0.492 standard deviations above the mean) are spoken and Michael is the focus of the episode. This corresponds to a rating within the top 12%.
+
+A comment is warranted on the related characteristics of number of words, lines, directions and duration of an episode: Generally, longer episodes tend to be more popular than shorter ones, however, according to our model this appears to be best explained by the number of words and the number of lines rather than the actual length. It may therefore be advisable to have episodes with more dialogue rather than stretching out an episode for the sake of duration itself. This leads to another interesting conclusion, in that several characteristics did not emerge significant to the rating: For instance, we found no evidence that certain writers or directors wrote superior episodes. Neither did we find support for an effect Guest Stars may have. This suggests that the producers may wish to refrain from hiring expensive writers, directors and guests as they do not seems to contribute to the popularity of an episode.    
+
+We believe that this analysis and the recommendations made above can help NBC Universal Studios produce a very popular reunion episode. 
 
 ## 5. Convert Document
 
